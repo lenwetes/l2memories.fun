@@ -1078,10 +1078,65 @@
         </div>
     </footer>
 
+    <!-- Firebase Realtime Database SDKs (Compat v9) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <!-- Scripts Interactivos -->
     <script>
         // Renderizar iconos de Lucide
         lucide.createIcons();
+
+        // ------------------ FIREBASE REALTIME DATABASE ------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEimmdoSbuONb5Rh9BrgKO2yVn-SSu2fU",
+            authDomain: "encuestas-a9df5.firebaseapp.com",
+            databaseURL: "https://encuestas-a9df5-default-rtdb.firebaseio.com",
+            projectId: "encuestas-a9df5",
+            storageBucket: "encuestas-a9df5.firebasestorage.app",
+            messagingSenderId: "641127255614",
+            appId: "1:641127255614:web:1cb8e3e97a1b2f1617cb6f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
+        const pollsRef = rtdb.ref('l2memories_polls');
+
+        // Votos locales del usuario (qué opción eligió en este navegador)
+        function getMyVotes() {
+            try {
+                return JSON.parse(localStorage.getItem('l2memories_user_votes_live') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+        function saveMyVotes(votes) {
+            localStorage.setItem('l2memories_user_votes_live', JSON.stringify(votes));
+        }
+
+        // Conteos globales sincronizados en tiempo real por Firebase
+        let globalCounts = {
+            'poll-rates': [0, 0, 0],
+            'poll-buffs': [0, 0, 0],
+            'poll-dualbox': [0, 0, 0],
+            'poll-loot': [0, 0, 0],
+            'poll-shop': [0, 0]
+        };
+
+        // Escuchar cambios en la nube en tiempo real (todos los visitantes ven las barras moverse)
+        pollsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                for (let pollId in globalCounts) {
+                    if (data[pollId] && Array.isArray(data[pollId])) {
+                        globalCounts[pollId] = data[pollId];
+                    }
+                }
+            }
+            renderPollsUI();
+        }, (err) => {
+            console.warn('Firebase sync warning:', err);
+            renderPollsUI();
+        });
 
         // ------------------ SISTEMA DE ENCUESTAS INTERACTIVO ------------------
         const pollDefinitions = {
@@ -1126,77 +1181,68 @@
             }
         };
 
-        const pollDefaults = {
-            'poll-rates': {
-                counts: [0, 0, 0],
-                userVote: null
-            },
-            'poll-buffs': {
-                counts: [0, 0, 0],
-                userVote: null
-            },
-            'poll-dualbox': {
-                counts: [0, 0, 0],
-                userVote: null
-            },
-            'poll-loot': {
-                counts: [0, 0, 0],
-                userVote: null
-            },
-            'poll-shop': {
-                counts: [0, 0],
-                userVote: null
-            }
-        };
-
         function getPollData() {
-            const saved = localStorage.getItem('l2memories_polls_launch_clean_v3');
-            if (saved) {
-                try {
-                    return JSON.parse(saved);
-                } catch (e) {
-                    return pollDefaults;
-                }
+            const myVotes = getMyVotes();
+            const result = {};
+            for (let pollId in pollDefinitions) {
+                result[pollId] = {
+                    counts: globalCounts[pollId] ? [...globalCounts[pollId]] : [0, 0, 0],
+                    userVote: (myVotes[pollId] !== undefined) ? myVotes[pollId] : null
+                };
             }
-            return pollDefaults;
-        }
-
-        function savePollData(data) {
-            localStorage.setItem('l2memories_polls_launch_clean_v3', JSON.stringify(data));
+            return result;
         }
 
         function castVote(pollId, optionIndex) {
-            const data = getPollData();
-            if (!data[pollId]) return;
+            const myVotes = getMyVotes();
+            const prevVote = (myVotes[pollId] !== undefined) ? myVotes[pollId] : null;
 
-            const previousVote = data[pollId].userVote;
+            if (prevVote === optionIndex) return;
 
-            if (previousVote === optionIndex) return;
-
-            if (previousVote !== null && data[pollId].counts[previousVote] > 0) {
-                data[pollId].counts[previousVote]--;
+            // Actualización optimista local inmediata
+            if (prevVote !== null && globalCounts[pollId] && globalCounts[pollId][prevVote] > 0) {
+                globalCounts[pollId][prevVote]--;
             }
-
-            data[pollId].counts[optionIndex]++;
-            data[pollId].userVote = optionIndex;
-
-            savePollData(data);
+            if (globalCounts[pollId]) {
+                globalCounts[pollId][optionIndex] = (globalCounts[pollId][optionIndex] || 0) + 1;
+            }
+            myVotes[pollId] = optionIndex;
+            saveMyVotes(myVotes);
             renderPollsUI();
+
+            // Transacción atómica global en Firebase
+            pollsRef.child(pollId).transaction((counts) => {
+                const optCount = pollDefinitions[pollId].options.length;
+                if (!counts || !Array.isArray(counts) || counts.length !== optCount) {
+                    counts = new Array(optCount).fill(0);
+                }
+                if (prevVote !== null && counts[prevVote] > 0) {
+                    counts[prevVote]--;
+                }
+                counts[optionIndex] = (counts[optionIndex] || 0) + 1;
+                return counts;
+            }, (error, committed) => {
+                if (error) {
+                    console.error('Error al registrar voto en Firebase:', error);
+                }
+            });
         }
 
         function resetUserVotes() {
             if (!confirm('¿Deseas reiniciar tus votos para responder nuevamente?')) return;
-            const data = getPollData();
-            for (let pollId in data) {
-                if (data[pollId].userVote !== null) {
-                    const idx = data[pollId].userVote;
-                    if (data[pollId].counts[idx] > 0) {
-                        data[pollId].counts[idx]--;
-                    }
-                    data[pollId].userVote = null;
+            const myVotes = getMyVotes();
+            for (let pollId in myVotes) {
+                const votedIdx = myVotes[pollId];
+                if (votedIdx !== null && votedIdx !== undefined) {
+                    pollsRef.child(pollId).transaction((counts) => {
+                        if (counts && counts[votedIdx] > 0) {
+                            counts[votedIdx]--;
+                        }
+                        return counts;
+                    });
                 }
             }
-            savePollData(data);
+            localStorage.removeItem('l2memories_user_votes_live');
             renderPollsUI();
         }
 
