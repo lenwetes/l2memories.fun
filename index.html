@@ -1318,10 +1318,11 @@
             alertBox.innerHTML = '<span class="inline-block animate-spin mr-2">⚙️</span> Transmitiendo respuestas de forma segura al Staff...';
 
             const payload = {
-                _subject: `[L2 Memories] Encuesta de Jugador: ${nick}`,
-                _replyto: (contact && contact.includes('@')) ? contact : undefined,
-                _captcha: 'false',
-                _template: 'table',
+                access_key: '21b47b42-98ce-4e76-b1af-be15d1a9b87d',
+                subject: `[L2 Memories] Encuesta de Jugador: ${nick}`,
+                from_name: 'L2 Memories Encuestas',
+                reply_to: (contact && contact.includes('@')) ? contact : undefined,
+                botcheck: '',
                 Jugador_Nickname: nick,
                 Contacto_Jugador: contact || 'No especificado',
                 ...answers,
@@ -1330,9 +1331,7 @@
             };
 
             try {
-                // Endpoint seguro sin exponer correo en texto plano en el HTML
-                const _target = atob('bHVpc3phcnRlY2FzQGdtYWlsLmNvbQ==');
-                const res = await fetch(`https://formsubmit.co/ajax/${_target}`, {
+                const res = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1340,15 +1339,16 @@
                     },
                     body: JSON.stringify(payload)
                 });
+                const result = await res.json();
 
-                if (res.ok) {
+                if (res.status === 200 && result.success) {
                     alertBox.className = 'p-4 rounded-lg border border-gold/40 bg-gold/10 text-gold-light text-xs font-sans block';
                     alertBox.innerHTML = `✓ <strong>¡Encuesta enviada con éxito!</strong> Tus votos fueron transmitidos directamente al equipo de administración. Gracias por forjar el renacer de L2 Memories.`;
                     submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     btnText.textContent = 'Encuesta Enviada ✓';
                     lucide.createIcons();
                 } else {
-                    throw new Error('El servidor de correo no respondió con éxito');
+                    throw new Error(result.message || 'El servidor de correo no respondió con éxito');
                 }
             } catch (err) {
                 alertBox.className = 'p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-red-300 text-xs font-sans block';
