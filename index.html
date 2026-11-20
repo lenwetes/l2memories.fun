@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L2 Memories • El Renacer del Rol Clásico | Lineage 2 High Five</title>
+    <meta name="description" content="L2 Memories (l2memories.fun) - Servidor High Five Part 5 a la antigua. Cero NPC Buffer. Donde ser Healer, Buffer o Tanque vuelve a ser sagrado.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#040508',
+                        abyss: '#080c14',
+                        slateCard: '#0d121e',
+                        gold: {
+                            light: '#fae9a5',
+                            DEFAULT: '#d4af37',
+                            dark: '#9a7b1c',
+                            glow: '#ffdf78'
+                        },
+                        freya: {
+                            ice: '#8ee9ff',
+                            light: '#38bdf8',
+                            DEFAULT: '#0284c7',
+                            dark: '#034a70',
+                            glow: '#00d2ff'
+                        },
+                        crimson: {
+                            glow: '#ff334b',
+                            DEFAULT: '#b91c1c'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['"Cinzel"', 'serif'],
+                        cinzelDeco: ['"Cinzel Decorative"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 30px -5px rgba(212, 175, 55, 0.4)',
+                        'gold-lg': '0 0 50px -10px rgba(212, 175, 55, 0.55)',
+                        'ice-glow': '0 0 35px -5px rgba(56, 189, 248, 0.45)',
+                        'card-glow': '0 15px 35px -10px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(212, 175, 55, 0.25)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #040508;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #252e42;
+            border-radius: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Typography & Gradients */
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #fff7d6 0%, #d4af37 50%, #9a7608 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-ice-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #8ee9ff 50%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-fire-gradient {
+            background: linear-gradient(135deg, #ffedd5 0%, #f97316 50%, #b91c1c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Card styles with high-end glassmorphism */
+        .border-gold-card {
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            background: linear-gradient(180deg, rgba(13, 18, 30, 0.88) 0%, rgba(8, 12, 20, 0.96) 100%);
+            backdrop-filter: blur(14px);
+        }
+        .border-gold-card:hover {
+            border-color: rgba(212, 175, 55, 0.6);
+            box-shadow: 0 15px 40px -10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Decorative filigree corners */
+        .filigree-corner::before, .filigree-corner::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-color: #d4af37;
+            pointer-events: none;
+        }
+        .filigree-corner::before {
+            top: 2px;
+            left: 2px;
+            border-top: 2px solid #d4af37;
+            border-left: 2px solid #d4af37;
+        }
+        .filigree-corner::after {
+            bottom: 2px;
+            right: 2px;
+            border-bottom: 2px solid #d4af37;
+            border-right: 2px solid #d4af37;
+        }
+
+        /* Ambient canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Hero Background Vignette */
+        .hero-vignette {
+            background: radial-gradient(circle at center, rgba(4, 5, 8, 0.45) 0%, rgba(4, 5, 8, 0.9) 70%, rgba(4, 5, 8, 1) 100%);
+        }
+        .art-overlay {
+            background: linear-gradient(180deg, rgba(4, 5, 8, 0.2) 0%, rgba(4, 5, 8, 0.8) 75%, rgba(4, 5, 8, 1) 100%);
+        }
+
+        /* Pulse animations */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.35; transform: scale(1); }
+            50% { opacity: 0.65; transform: scale(1.04); }
+        }
+        .pulse-aura {
+            animation: pulseGlow 7s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-void text-gray-200 font-sans selection:bg-gold selection:text-black min-h-screen overflow-x-hidden relative">
+
+    <!-- Canvas de partículas mágicas y ascuas de combate -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Luces ambientales de fondo -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[600px] bg-gradient-to-b from-freya-ice/15 via-gold/10 to-transparent blur-3xl pointer-events-none z-0 pulse-aura"></div>
+    <div class="fixed bottom-0 right-0 w-[700px] h-[500px] bg-crimson/10 blur-3xl pointer-events-none z-0"></div>
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="sticky top-0 z-50 bg-abyss/85 backdrop-blur-md border-b border-gold/20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logotipo / Emblema -->
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="relative w-11 h-11 rounded-lg bg-gradient-to-br from-gold/30 via-gold/10 to-transparent p-0.5 border border-gold/50 flex items-center justify-center shadow-gold-glow group-hover:scale-105 transition-transform">
+                        <i data-lucide="shield" class="w-6 h-6 text-gold group-hover:text-gold-light transition-colors"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-cinzel text-xl sm:text-2xl font-black tracking-widest text-gold-gradient">
+                            L2 MEMORIES
+                        </span>
+                        <span class="text-[10px] uppercase font-mono tracking-widest text-freya-ice font-semibold">
+                            l2memories.fun • High Five Classic Spirit
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Menú de Navegación -->
+                <div class="hidden md:flex items-center space-x-8 font-cinzel text-xs tracking-widest uppercase">
+                    <a href="#filosofia" class="text-gray-300 hover:text-gold transition-colors py-1 relative group">
+                        Espíritu Clásico
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="#roles" class="text-gray-300 hover:text-gold transition-colors py-1 relative group">
+                        El Renacer del Rol
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="#encuestas" class="text-gold-light font-bold hover:text-gold flex items-center gap-1.5 transition-colors py-1 relative group">
+                        <span class="w-2 h-2 rounded-full bg-freya-ice animate-ping"></span>
+                        Encuestas
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="#cronica" class="text-gray-300 hover:text-gold transition-colors py-1 relative group">
+                        Crónica
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                    <a href="#roadmap" class="text-gray-300 hover:text-gold transition-colors py-1 relative group">
+                        Roadmap
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></span>
+                    </a>
+                </div>
+
+                <!-- Botón CTA -->
+                <div class="flex items-center gap-3">
+                    <a href="#encuestas" class="relative inline-flex items-center justify-center px-5 py-2.5 overflow-hidden font-cinzel text-xs font-bold uppercase tracking-wider text-black transition-all duration-300 ease-out bg-gradient-to-r from-gold-light via-gold to-gold-dark rounded shadow-gold-glow hover:shadow-gold-lg hover:scale-105 active:scale-95">
+                        <span class="relative flex items-center gap-2">
+                            <i data-lucide="vote" class="w-4 h-4"></i>
+                            Votar el Futuro
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="relative z-10">
+
+        <!-- ================= HERO SECTION CON FONDO CINEMÁTICO ================= -->
+        <section id="hero" class="relative min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 text-center overflow-hidden">
+            <!-- Imagen de Fondo Hero con Máscara Cinematográfica -->
+            <div class="absolute inset-0 z-0">
+                <img src="assets/images/l2-official-hero-bg.jpg" alt="Lineage II High Five Official Key Art" class="w-full h-full object-cover object-center scale-105 filter brightness-[0.38] contrast-125">
+                <div class="absolute inset-0 hero-vignette"></div>
+            </div>
+
+            <!-- Contenido Central del Hero -->
+            <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center">
+                
+                <!-- Badge Destacado: Cero NPC Buffer -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-void/90 border border-gold/50 shadow-gold-glow mb-6 backdrop-blur-sm animate-fade-in">
+                    <i data-lucide="flame" class="w-4 h-4 text-gold animate-pulse"></i>
+                    <span class="font-cinzel text-xs tracking-widest text-gold-light font-bold uppercase">
+                        Sin NPC Buffer &bull; Donde el Trabajo en Equipo es Sagrado
+                    </span>
+                </div>
+
+                <!-- Título Monumental -->
+                <h1 class="font-cinzelDeco text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-widest text-gold-gradient leading-none drop-shadow-2xl">
+                    L2 MEMORIES
+                </h1>
+                
+                <!-- Subtítulo con Alma Clásica -->
+                <p class="font-cinzel text-lg sm:text-2xl text-freya-ice font-semibold tracking-widest mt-4 uppercase max-w-3xl">
+                    Lineage II High Five Part 5 &bull; La Época Dorada del Rol y la Comunidad
+                </p>
+
+                <!-- Descripción Emotiva -->
+                <p class="font-sans text-gray-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mt-6 leading-relaxed font-light">
+                    ¿Recuerdas cuando ser <strong class="text-gold font-medium">Bishop, Prophet, Shillien Saint o Bladedancer</strong> te convertía en el héroe más buscado de cada clan? En <strong class="text-white">l2memories.fun</strong> desterramos los servidores genéricos automatizados. Volvemos al origen: partys de 9 jugadores, coordinación por voz, respeto al rol y decisiones forjadas por la comunidad.
+                </p>
+
+                <!-- Tarjeta del Contador Regresivo -->
+                <div class="mt-8 p-5 sm:p-6 rounded-xl border-gold-card max-w-lg w-full filigree-corner shadow-card-glow">
+                    <div class="text-[11px] uppercase font-cinzel tracking-widest text-gold/90 mb-3 flex items-center justify-center gap-2">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-gold"></i>
+                        Cierre de Votaciones Comunitarias &bull; Fase Alpha
+                    </div>
+                    <div class="grid grid-cols-4 gap-3 text-center">
+                        <div class="bg-void/85 p-3 rounded border border-gold/25">
+                            <span id="countdownDays" class="block font-cinzel text-2xl sm:text-3xl font-extrabold text-gold-light">14</span>
+                            <span class="text-[10px] uppercase font-mono tracking-widest text-gray-400">Días</span>
+                        </div>
+                        <div class="bg-void/85 p-3 rounded border border-gold/25">
+                            <span id="countdownHours" class="block font-cinzel text-2xl sm:text-3xl font-extrabold text-gold-light">18</span>
+                            <span class="text-[10px] uppercase font-mono tracking-widest text-gray-400">Horas</span>
+                        </div>
+                        <div class="bg-void/85 p-3 rounded border border-gold/25">
+                            <span id="countdownMinutes" class="block font-cinzel text-2xl sm:text-3xl font-extrabold text-gold-light">42</span>
+                            <span class="text-[10px] uppercase font-mono tracking-widest text-gray-400">Min</span>
+                        </div>
+                        <div class="bg-void/85 p-3 rounded border border-gold/25">
+                            <span id="countdownSeconds" class="block font-cinzel text-2xl sm:text-3xl font-extrabold text-freya-ice">55</span>
+                            <span class="text-[10px] uppercase font-mono tracking-widest text-gray-400">Seg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones CTA Hero -->
+                <div class="mt-8 flex flex-wrap gap-4 items-center justify-center">
+                    <a href="#encuestas" class="px-8 py-4 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-black font-cinzel font-bold text-xs sm:text-sm uppercase tracking-widest rounded shadow-gold-glow hover:shadow-gold-lg hover:scale-105 transition-all flex items-center gap-2">
+                        <i data-lucide="check-square" class="w-4 h-4"></i>
+                        Participar en las Encuestas
+                    </a>
+                    <a href="#filosofia" class="px-8 py-4 bg-void/90 hover:bg-slateCard text-gray-200 border border-gold/40 hover:border-gold font-cinzel text-xs sm:text-sm uppercase tracking-widest rounded transition-all flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-gold"></i>
+                        Nuestra Filosofía
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= FILOSOFÍA: EL REGRESO AL ORIGEN ================= -->
+        <section id="filosofia" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="font-cinzel text-xs uppercase tracking-widest text-gold font-bold">Un Manifiesto de Jugador a Jugador</span>
+                <h2 class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient mt-2 uppercase">
+                    La Verdadera Esencia de Lineage II
+                </h2>
+                <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mt-4"></div>
+                <p class="font-sans text-gray-300 mt-4 text-sm sm:text-base font-light leading-relaxed">
+                    Los servidores modernos mataron el espíritu del juego al colocar un NPC Buffer en cada esquina y permitir que una sola persona controle 6 cajas sin hablar con nadie. En <strong class="text-gold font-medium">L2 Memories</strong> rescatamos la emoción de crear lazos reales, reclutar soportes y conquistar el mundo juntos.
+                </p>
+            </div>
+
+            <!-- Banner Artístico con Hero Oficial Lineage II -->
+            <div class="relative rounded-2xl overflow-hidden border border-gold/30 shadow-card-glow mb-16 group">
+                <img src="assets/images/l2-hero-animated.png" alt="Lineage II High Five Key Art Oficial" class="w-full h-64 sm:h-80 md:h-96 object-cover object-top group-hover:scale-105 transition-all duration-700 filter brightness-90">
+                <div class="absolute inset-0 bg-gradient-to-t from-void via-void/50 to-transparent flex items-end p-6 sm:p-10">
+                    <div class="max-w-2xl">
+                        <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Recuerdos Inolvidables</span>
+                        <h3 class="font-cinzel text-2xl sm:text-4xl font-extrabold text-gold-light mt-1">
+                            "Si el Buffer no está, la Party no sale."
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-300 mt-2 font-light">
+                            En Dragon Valley, Antharas Lair y las Catacumbas, cada buff cuenta. El respeto al soporte es la ley suprema de L2 Memories.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Los 3 Pilares Fundacionales -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Pilar 1 -->
+                <div class="p-8 rounded-xl border-gold-card relative group hover:-translate-y-1 transition-all">
+                    <div class="w-14 h-14 rounded-lg bg-gold/10 border border-gold/40 flex items-center justify-center text-gold mb-6 group-hover:scale-110 group-hover:shadow-gold-glow transition-all">
+                        <i data-lucide="heart-handshake" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-cinzel text-xl font-bold text-gold-light mb-2">Cero NPC Buffer</h3>
+                    <p class="text-xs sm:text-sm text-gray-400 font-light leading-relaxed">
+                        No hay atajos milagrosos. Los buffs provienen exclusivamente de jugadores: Prophets, Elven Elders, Shillien Saints, Warcryers y Overlords. Ser soporte vuelve a ser prestigioso, divertido y crucial.
+                    </p>
+                </div>
+
+                <!-- Pilar 2 -->
+                <div class="p-8 rounded-xl border-gold-card relative group hover:-translate-y-1 transition-all">
+                    <div class="w-14 h-14 rounded-lg bg-freya-ice/10 border border-freya-ice/40 flex items-center justify-center text-freya-ice mb-6 group-hover:scale-110 group-hover:shadow-ice-glow transition-all">
+                        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-cinzel text-xl font-bold text-ice-gradient mb-2">Control Estricto de Dualbox</h3>
+                    <p class="text-xs sm:text-sm text-gray-400 font-light leading-relaxed">
+                        Basta de 'ejércitos de fantasmas' en /follow. Diseñamos un entorno donde buscar party en el canal de chat o usar el Party Matching sea la norma diaria, fomentando amistades y rivalidades épicas.
+                    </p>
+                </div>
+
+                <!-- Pilar 3 -->
+                <div class="p-8 rounded-xl border-gold-card relative group hover:-translate-y-1 transition-all">
+                    <div class="w-14 h-14 rounded-lg bg-gold/10 border border-gold/40 flex items-center justify-center text-gold mb-6 group-hover:scale-110 group-hover:shadow-gold-glow transition-all">
+                        <i data-lucide="cpu" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="font-cinzel text-xl font-bold text-gold-light mb-2">Estabilidad Java 27</h3>
+                    <p class="text-xs sm:text-sm text-gray-400 font-light leading-relaxed">
+                        El encanto de 2010 con la ingeniería de 2026. Motor Java de última generación compilado sobre L2JMobius, geodata milimétrica en 3D, cero micro-cortes y fluidez absoluta en los asedios de castillos.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EL RENACER DEL ROL: GALERÍA DE CLASES ================= -->
+        <section id="roles" class="py-24 px-4 sm:px-6 lg:px-8 bg-abyss/60 border-t border-gold/20 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="font-cinzel text-xs uppercase tracking-widest text-freya-ice font-bold">La Trinidad Sagrada</span>
+                    <h2 class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient mt-2 uppercase">
+                        El Renacer del Rol Puro
+                    </h2>
+                    <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mt-4"></div>
+                    <p class="font-sans text-gray-300 mt-4 text-sm sm:text-base font-light">
+                        Cada arquetipo tiene una identidad irremplazable. En L2 Memories ningún personaje es un accesorio secundario; todos son protagonistas del campo de batalla.
+                    </p>
+                </div>
+
+                <!-- Grid de Galería de Roles con Imágenes Reales del Juego -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Tarjeta 1: Los Sanadores (Cardinal) -->
+                    <div class="group relative rounded-xl overflow-hidden border-gold-card flex flex-col h-full shadow-card-glow">
+                        <div class="relative h-72 overflow-hidden flex items-end justify-center bg-gradient-to-t from-void via-abyss/60 to-transparent pt-4">
+                            <img src="assets/images/l2-cardinal.png" alt="Cardinal Healer Oficial Lineage 2" class="h-64 object-contain group-hover:scale-110 transition-transform duration-500 filter drop-shadow-[0_10px_25px_rgba(2,132,199,0.35)]">
+                            <div class="absolute inset-0 art-overlay pointer-events-none"></div>
+                            <div class="absolute top-3 left-3 px-2.5 py-1 rounded bg-void/80 border border-gold/40 text-[10px] font-mono text-gold-light uppercase tracking-wider">
+                                Sanadores Vitales
+                            </div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between bg-void/90">
+                            <div>
+                                <h3 class="font-cinzel text-xl font-bold text-gold-light mb-1">Cardinal & Saint</h3>
+                                <p class="text-xs text-freya-ice font-mono mb-3">Bishop &bull; Elven Elder &bull; Shillien Saint</p>
+                                <p class="text-xs text-gray-400 font-light leading-relaxed">
+                                    Túnica Major Arcana y Arcana Mace. Purificación masiva, resurrección al 100%, recarga de maná y balance de vida. Sin ellos, el Raid Boss no cae.
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] text-gold/80 font-mono">
+                                Invaluable en PvE y PvP
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 2: Los Buffers Clásicos (Hierophant) -->
+                    <div class="group relative rounded-xl overflow-hidden border-gold-card flex flex-col h-full shadow-card-glow">
+                        <div class="relative h-72 overflow-hidden flex items-end justify-center bg-gradient-to-t from-void via-abyss/60 to-transparent pt-4">
+                            <img src="assets/images/l2-hierophant.png" alt="Hierophant Buffer Oficial Lineage 2" class="h-64 object-contain group-hover:scale-110 transition-transform duration-500 filter drop-shadow-[0_10px_25px_rgba(212,175,55,0.35)]">
+                            <div class="absolute inset-0 art-overlay pointer-events-none"></div>
+                            <div class="absolute top-3 left-3 px-2.5 py-1 rounded bg-void/80 border border-gold/40 text-[10px] font-mono text-gold-light uppercase tracking-wider">
+                                Bendición y Poder
+                            </div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between bg-void/90">
+                            <div>
+                                <h3 class="font-cinzel text-xl font-bold text-gold-light mb-1">Hierophant & Shamans</h3>
+                                <p class="text-xs text-freya-ice font-mono mb-3">Prophet &bull; Warcryer &bull; Overlord</p>
+                                <p class="text-xs text-gray-400 font-light leading-relaxed">
+                                    Haste, Berserker Spirit, Chant of Victory y Pa'agrio. El soporte humano y orco marca la diferencia entre el triunfo y la derrota en cada asedio.
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] text-gold/80 font-mono">
+                                El corazón de cada clan
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 3: Danzas y Cantos (Spectral Dancer) -->
+                    <div class="group relative rounded-xl overflow-hidden border-gold-card flex flex-col h-full shadow-card-glow">
+                        <div class="relative h-72 overflow-hidden flex items-end justify-center bg-gradient-to-t from-void via-abyss/60 to-transparent pt-4">
+                            <img src="assets/images/l2-spectral-dancer.png" alt="Spectral Dancer Oficial Lineage 2" class="h-64 object-contain group-hover:scale-110 transition-transform duration-500 filter drop-shadow-[0_10px_25px_rgba(168,85,247,0.35)]">
+                            <div class="absolute inset-0 art-overlay pointer-events-none"></div>
+                            <div class="absolute top-3 left-3 px-2.5 py-1 rounded bg-void/80 border border-gold/40 text-[10px] font-mono text-gold-light uppercase tracking-wider">
+                                Armonía Táctica
+                            </div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between bg-void/90">
+                            <div>
+                                <h3 class="font-cinzel text-xl font-bold text-gold-light mb-1">Dancer & Singer</h3>
+                                <p class="text-xs text-freya-ice font-mono mb-3">Spectral Dancer &bull; Sword Muse</p>
+                                <p class="text-xs text-gray-400 font-light leading-relaxed">
+                                    Tallum Duals, Dance of Fury, Fire, Song of Hunter y Earth. Coordinar las danzas al segundo exacto es el sello de los mejores jugadores de High Five.
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] text-gold/80 font-mono">
+                                Multiplicador de daño supremo
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 4: Los Tanques (Hell Knight / Temple Knight Oficial) -->
+                    <div class="group relative rounded-xl overflow-hidden border-gold-card flex flex-col h-full shadow-card-glow">
+                        <div class="relative h-72 overflow-hidden flex items-end justify-center bg-gradient-to-t from-void via-abyss/60 to-transparent pt-4">
+                            <img src="assets/images/l2-hell-knight.png" alt="Hell Knight Tanque Oficial Lineage 2" class="h-64 object-contain group-hover:scale-110 transition-transform duration-500 filter drop-shadow-[0_10px_25px_rgba(212,175,55,0.45)]">
+                            <div class="absolute inset-0 art-overlay pointer-events-none"></div>
+                            <div class="absolute top-3 left-3 px-2.5 py-1 rounded bg-void/80 border border-gold/40 text-[10px] font-mono text-gold-light uppercase tracking-wider">
+                                Primera Línea
+                            </div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between bg-void/90">
+                            <div>
+                                <h3 class="font-cinzel text-xl font-bold text-gold-light mb-1">Caballeros & Guardianes</h3>
+                                <p class="text-xs text-freya-ice font-mono mb-3">Paladin &bull; Dark Avenger &bull; SK &bull; TK</p>
+                                <p class="text-xs text-gray-400 font-light leading-relaxed">
+                                    Aggression, Ultimate Defense, Touch of Death y Phoenix. Proteger a los healers del fuego enemigo es el deber supremo del líder de choque.
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] text-gold/80 font-mono">
+                                La defensa inquebrantable
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECCIÓN DE ENCUESTAS COMUNITARIAS ================= -->
+        <section id="encuestas" class="py-24 px-4 sm:px-6 lg:px-8 bg-void border-y border-gold/20 relative">
+            <div class="max-w-5xl mx-auto">
+                
+                <!-- Encabezado de Encuestas -->
+                <div class="text-center mb-12">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-gold/10 border border-gold/40 text-gold font-mono text-xs uppercase tracking-widest mb-3">
+                        <i data-lucide="vote" class="w-3.5 h-3.5"></i>
+                        Tu Voto Construye el Servidor
+                    </div>
+                    <h2 class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient uppercase">
+                        Encuestas de Desarrollo
+                    </h2>
+                    <p class="font-sans text-gray-300 text-sm sm:text-base mt-3 max-w-2xl mx-auto font-light leading-relaxed">
+                        Aquí no hay fórmulas prefabricadas ni decisiones unilaterales. Vota en cada una de las preguntas clave. Tu elección se almacena en tiempo real y guiará la configuración exacta de los archivos del servidor.
+                    </p>
+                </div>
+
+                <!-- Barra de Progreso de Votos del Usuario -->
+                <div class="bg-slateCard/90 border border-gold/30 rounded-xl p-4 sm:p-6 mb-12 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-card-glow">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gold/10 border border-gold/40 flex items-center justify-center text-gold">
+                            <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="font-cinzel font-bold text-sm sm:text-base text-gray-100">
+                                Tu Progreso de Votación: <span id="votedCountDisplay" class="text-gold font-mono">0 / 5</span> completadas
+                            </div>
+                            <div class="text-xs text-gray-400 font-sans" id="pollStatusMessage">
+                                Participa en las decisiones que definirán la crónica.
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="resetUserVotes()" class="text-xs font-mono text-gray-400 hover:text-gold underline transition-colors">
+                        Reiniciar mis votos
+                    </button>
+                </div>
+
+                <!-- Contenedor de Encuestas -->
+                <div class="space-y-8" id="pollsContainer">
+                    
+                    <!-- Encuesta 1: Rates de Experiencia -->
+                    <div class="poll-card p-6 sm:p-8 rounded-xl border-gold-card relative" data-poll-id="poll-rates">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Pregunta 1 &bull; Progresión y Economía</span>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light mt-1">
+                                    ¿Cuál es el multiplicador de Rates ideal para L2 Memories?
+                                </h3>
+                            </div>
+                            <span class="poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono">Sin votar</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-400 mb-6 font-light">
+                            En un servidor sin NPC Buffer, las rates definen la longevidad del servidor, el valor de cada cristal D/C/B/A/S y la economía de los enanos artesanos y spoilers.
+                        </p>
+
+                        <div class="space-y-3 options-container">
+                            <button onclick="castVote('poll-rates', 0)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Low-Rate Purista (x1 a x3)</div>
+                                            <div class="text-xs text-gray-400 font-light">Pura nostalgia clásica. Cada nivel se celebra, cada quest importa y el mercado es sagrado.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-rates', 1)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Mid-Low Equilibrado (x5)</div>
+                                            <div class="text-xs text-gray-400 font-light">El punto medio perfecto: respeta el esfuerzo sin castigar a quienes tienen trabajo o estudio.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-rates', 2)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Rates Dinámicas (x5 hasta 76 &bull; luego x3 hacia 85)</div>
+                                            <div class="text-xs text-gray-400 font-light">Ayuda a superar el early game rápido y centra el esfuerzo en el high-end de High Five.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Encuesta 2: Duración de Buffs de Jugador -->
+                    <div class="poll-card p-6 sm:p-8 rounded-xl border-gold-card relative" data-poll-id="poll-buffs">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Pregunta 2 &bull; Dinámica de Party (100% Buffers Reales)</span>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light mt-1">
+                                    ¿Cuál debe ser la duración de los Buffs otorgados por jugadores?
+                                </h3>
+                            </div>
+                            <span class="poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono">Sin votar</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-400 mb-6 font-light">
+                            Confirmado: <strong class="text-gold font-medium">NO HABRÁ NPC BUFFER</strong>. Solo los jugadores emitirán buffs. ¿Cuánto tiempo debe durar cada ciclo?
+                        </p>
+
+                        <div class="space-y-3 options-container">
+                            <button onclick="castVote('poll-buffs', 0)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Retail Estricto (20 Minutos)</div>
+                                            <div class="text-xs text-gray-400 font-light">El buffer debe estar activo y atento al reloj cada segundo. Fomenta la máxima sincronía.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-buffs', 1)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">40 Minutos de duración</div>
+                                            <div class="text-xs text-gray-400 font-light">Doble tiempo: permite sesiones de farmeo más fluidas sin perder la necesidad de llevar el buffer en party.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-buffs', 2)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">1 Hora de duración</div>
+                                            <div class="text-xs text-gray-400 font-light">Excelente para el juego casual, aunque los cantos/danzas seguirán teniendo su timer especial.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Encuesta 3: Límite de Dualbox -->
+                    <div class="poll-card p-6 sm:p-8 rounded-xl border-gold-card relative" data-poll-id="poll-dualbox">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Pregunta 3 &bull; Clientes y Convivencia</span>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light mt-1">
+                                    ¿Cuál debe ser la política de Dualbox (Cuentas por PC)?
+                                </h3>
+                            </div>
+                            <span class="poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono">Sin votar</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-400 mb-6 font-light">
+                            Controlar el dualbox es el paso definitivo para garantizar que la gente busque partys reales en lugar de jugar en solitario.
+                        </p>
+
+                        <div class="space-y-3 options-container">
+                            <button onclick="castVote('poll-dualbox', 0)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">1 Sola Cuenta Activa (0 Dualbox)</div>
+                                            <div class="text-xs text-gray-400 font-light">El compromiso más puro: 100% de la gente interactuando, hablando y reclutando gente real.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-dualbox', 1)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">1 Principal + 1 Soporte (Límite 2 Cuentas)</div>
+                                            <div class="text-xs text-gray-400 font-light">Permite llevar tu propio buffer/spoiler de apoyo en horarios nocturnos con poca gente.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-dualbox', 2)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">1 Main + 1 Offline Shop (Comercio Libre)</div>
+                                            <div class="text-xs text-gray-400 font-light">Solo 1 personaje jugando en el mundo, pero con tienda privada de compra/venta desconectada.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Encuesta 4: Recogida de Items (Loot) -->
+                    <div class="poll-card p-6 sm:p-8 rounded-xl border-gold-card relative" data-poll-id="poll-loot">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Pregunta 4 &bull; Mecánica Clásica</span>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light mt-1">
+                                    ¿Cómo debe funcionar la recogida de ítems y drop de monstruos?
+                                </h3>
+                            </div>
+                            <span class="poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono">Sin votar</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-400 mb-6 font-light">
+                            En Lineage 2 antiguo, el drop en el suelo generaba tensión, robos de drop entre enemigos y la clásica emoción de levantar la adena a mano.
+                        </p>
+
+                        <div class="space-y-3 options-container">
+                            <button onclick="castVote('poll-loot', 0)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Recogida Manual (Manual Pick-up 100% Retail)</div>
+                                            <div class="text-xs text-gray-400 font-light">Los monstruos botan todo al suelo. Quien hace click más rápido se lleva el botín.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-loot', 1)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Auto-loot sólo de Adena &bull; Ítems al suelo</div>
+                                            <div class="text-xs text-gray-400 font-light">La moneda va al inventario automáticamente, pero las armas, armaduras y recetas quedan en el piso.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-loot', 2)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Auto-loot Completo</div>
+                                            <div class="text-xs text-gray-400 font-light">Máxima comodidad: todo el drop cae directo a la mochila del jugador o party.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Encuesta 5: Tienda y Donaciones -->
+                    <div class="poll-card p-6 sm:p-8 rounded-xl border-gold-card relative" data-poll-id="poll-shop">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-widest text-freya-ice font-semibold">Pregunta 5 &bull; Ética y Sustentabilidad</span>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light mt-1">
+                                    ¿Cuál es la política de donación que garantiza cero Pay-to-Win?
+                                </h3>
+                            </div>
+                            <span class="poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono">Sin votar</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-400 mb-6 font-light">
+                            L2 Memories se financia exclusivamente con la ayuda de la comunidad para pagar el datacenter y la protección anti-DDoS.
+                        </p>
+
+                        <div class="space-y-3 options-container">
+                            <button onclick="castVote('poll-shop', 0)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">100% Cosmética & Membresía VIP (+XP/SP moderado)</div>
+                                            <div class="text-xs text-gray-400 font-light">Gorros, capas estéticas, cambio de color de nombre y bonus pequeño de XP. Cero armas o enchants.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+
+                            <button onclick="castVote('poll-shop', 1)" class="option-btn w-full text-left p-4 rounded-lg bg-abyss/80 border border-gray-800 hover:border-gold/40 transition-all relative overflow-hidden group">
+                                <div class="progress-bar absolute top-0 left-0 bottom-0 bg-gold/15 transition-all duration-700 w-0"></div>
+                                <div class="relative flex items-center justify-between z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="check-circle w-5 h-5 rounded-full border border-gray-600 flex items-center justify-center text-transparent group-hover:border-gold">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-sm text-gray-200 group-hover:text-gold-light">Cosmética + Consumibles de Conveniencia</div>
+                                            <div class="text-xs text-gray-400 font-light">Permite comprar soulshots básicos (sin peso excesivo) y pociones de maná para agilizar el juego.</div>
+                                        </div>
+                                    </div>
+                                    <span class="percentage-label font-mono text-xs font-bold text-gold">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Envío de Resultados a la Administración -->
+                    <div class="p-6 sm:p-10 rounded-2xl border-gold-card relative shadow-card-glow filigree-corner mt-12 bg-gradient-to-b from-slateCard/95 via-abyss/95 to-void">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-gold/15 border border-gold/40 flex items-center justify-center text-gold shadow-gold-glow">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-light">
+                                    Enviar tus Respuestas al Staff
+                                </h3>
+                                <p class="text-xs text-gray-400 font-light">
+                                    Tus elecciones se enviarán directamente al correo de la administración (<span class="text-gold font-mono font-medium">luiszartecas@gmail.com</span>) para ser analizadas en el diseño del servidor.
+                                </p>
+                            </div>
+                        </div>
+
+                        <form id="surveySubmitForm" onsubmit="submitSurveyToEmail(event)" class="space-y-5 mt-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-mono uppercase tracking-wider text-gray-300 mb-1.5">
+                                        Tu Nombre o Nickname <span class="text-gold">*</span>
+                                    </label>
+                                    <input type="text" id="playerNick" required placeholder="Ej: Kain / ValakasLord" class="w-full px-4 py-3 rounded-lg bg-abyss/90 border border-gray-700 focus:border-gold focus:ring-1 focus:ring-gold text-white text-sm outline-none transition-all placeholder:text-gray-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-mono uppercase tracking-wider text-gray-300 mb-1.5">
+                                        Tu Correo o Discord (Opcional)
+                                    </label>
+                                    <input type="text" id="playerContact" placeholder="Para avisarte de la Alpha / OBT" class="w-full px-4 py-3 rounded-lg bg-abyss/90 border border-gray-700 focus:border-gold focus:ring-1 focus:ring-gold text-white text-sm outline-none transition-all placeholder:text-gray-600">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase tracking-wider text-gray-300 mb-1.5">
+                                    Sugerencias, Ideas o Comentarios adicionales
+                                </label>
+                                <textarea id="playerComment" rows="3" placeholder="¿Tienes alguna idea para eventos, clanes, economía o zonas de farmeo? Cuéntaselo al staff..." class="w-full px-4 py-3 rounded-lg bg-abyss/90 border border-gray-700 focus:border-gold focus:ring-1 focus:ring-gold text-white text-sm outline-none transition-all placeholder:text-gray-600 resize-none"></textarea>
+                            </div>
+
+                            <!-- Resumen previo de votos seleccionados -->
+                            <div id="surveySummaryPreview" class="p-4 rounded-lg bg-void/80 border border-gold/20 text-xs space-y-1.5 text-gray-300 font-sans">
+                                <div class="font-mono text-gold-light font-semibold mb-1 flex items-center gap-1.5">
+                                    <i data-lucide="list-checks" class="w-4 h-4 text-gold"></i>
+                                    Resumen de tus votos actuales:
+                                </div>
+                                <div id="summaryVotesList" class="space-y-1 pl-1">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                                <div class="text-[11px] text-gray-500 font-mono flex items-center gap-1.5">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-gold"></i>
+                                    Recepción directa en luiszartecas@gmail.com
+                                </div>
+                                <button type="submit" id="btnSubmitSurvey" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-black font-cinzel font-bold text-xs uppercase tracking-widest rounded shadow-gold-glow hover:shadow-gold-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                    <i data-lucide="mail-check" class="w-4 h-4"></i>
+                                    <span id="btnSubmitText">Enviar Encuesta al Correo</span>
+                                </button>
+                            </div>
+
+                            <!-- Mensaje de estado -->
+                            <div id="submissionAlert" class="hidden p-4 rounded-lg border text-xs font-sans leading-relaxed"></div>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= RAID BOSSES Y CRÓNICA ================= -->
+        <section id="cronica" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="font-cinzel text-xs uppercase tracking-widest text-freya-ice font-bold">El Trono del Caos</span>
+                <h2 class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient mt-2 uppercase">
+                    Los Desafíos Legendarios de High Five
+                </h2>
+                <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mt-4"></div>
+            </div>
+
+            <!-- Dos Banners Gigantes Épicos (Freya & Antharas) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Freya — Fondo oficial L2 High Five con tinte de hielo -->
+                <div class="relative rounded-2xl overflow-hidden border border-freya-ice/30 shadow-ice-glow group h-96">
+                    <img src="assets/images/l2-official-hero-bg.jpg" alt="Lineage 2 High Five Official Art" class="w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-700 filter brightness-75 saturate-50">
+                    <!-- Capa de tinte hielo para evocar a Freya -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/70 via-blue-950/50 to-void/80 mix-blend-multiply pointer-events-none"></div>
+                    <!-- Clase oficial superpuesta: Evas Templar fondo para ambiente de hielo -->
+                    <div class="absolute right-0 bottom-0 h-full flex items-end justify-end pointer-events-none overflow-hidden opacity-30">
+                        <img src="assets/images/l2-evas-templar.png" alt="" class="h-80 object-contain filter drop-shadow-[0_0_30px_rgba(142,233,255,0.6)] translate-x-8">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent flex flex-col justify-end p-8">
+                        <span class="text-xs font-mono text-freya-ice uppercase tracking-widest font-bold">⬡ Instancia Épica · Freya</span>
+                        <h3 class="font-cinzel text-2xl sm:text-3xl font-bold text-white mt-1">Freya &bull; La Reina de Hielo</h3>
+                        <p class="text-xs sm:text-sm text-gray-300 font-light mt-2 max-w-md">
+                            Dificultades Normal y Extrema. Mecánicas donde el Song of Flame Guard y los escudos de resistencia al hielo de tus soportes salvan a la alianza del congelamiento total.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Antharas / Dragon Raid Oficial -->
+                <div class="relative rounded-2xl overflow-hidden border border-amber-600/30 shadow-card-glow group h-96">
+                    <img src="assets/images/l2-official-boss.jpg" alt="Raid Boss Oficial Lineage 2" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 filter brightness-85">
+                    <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent flex flex-col justify-end p-8">
+                        <span class="text-xs font-mono text-amber-400 uppercase tracking-widest font-bold">⬡ Dragón Terrestre · Antharas</span>
+                        <h3 class="font-cinzel text-2xl sm:text-3xl font-bold text-white mt-1">Antharas &bull; El Dragón de la Tierra</h3>
+                        <p class="text-xs sm:text-sm text-gray-300 font-light mt-2 max-w-md">
+                            El despertar en Giran. Petrificaciones masivas, temblores de tierra y el rugido que anuncia la bendición del Heraldo de Nevit sobre todo el servidor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asedios a Castillos — Render oficial de caballeros con fondo de batalla -->
+            <div class="relative rounded-2xl overflow-hidden border border-gold/30 shadow-card-glow bg-gradient-to-r from-abyss via-void to-abyss">
+                <!-- Fondo: hero oficial con oscurecimiento dramático -->
+                <img src="assets/images/l2-official-hero-bg.jpg" alt="" class="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.18] saturate-75 pointer-events-none">
+                <!-- Renders de clase: Phoenix Knight + Hell Knight flanqueando -->
+                <div class="absolute left-0 bottom-0 h-full flex items-end pointer-events-none overflow-hidden opacity-25 select-none">
+                    <img src="assets/images/l2-phoenix-knight.png" alt="" class="-translate-x-10 h-72 object-contain filter drop-shadow-[0_0_40px_rgba(212,175,55,0.7)]">
+                </div>
+                <div class="absolute right-0 bottom-0 h-full flex items-end justify-end pointer-events-none overflow-hidden opacity-25 select-none">
+                    <img src="assets/images/l2-hell-knight.png" alt="" class="translate-x-10 h-72 object-contain filter drop-shadow-[0_0_40px_rgba(212,175,55,0.7)] scale-x-[-1]">
+                </div>
+                <div class="relative z-10 p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="max-w-xl">
+                        <div class="inline-flex items-center gap-2 text-xs font-mono text-gold-light uppercase tracking-widest mb-2">
+                            <i data-lucide="crown" class="w-4 h-4 text-gold"></i>
+                            Guerra de Soberanía
+                        </div>
+                        <h3 class="font-cinzel text-2xl sm:text-3xl font-bold text-gold-gradient">
+                            Asedios a Castillos de Aden y Giran
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-300 font-light mt-3 leading-relaxed">
+                            Con un motor Java moderno que no colapsa por acumulación de paquetes de red, los asedios de clanes con cientos de jugadores recuperan la fluidez que siempre merecieron. Golems de asedio, estandartes y el trono esperando a su nuevo rey.
+                        </p>
+                    </div>
+                    <!-- Imagen complementaria con renders de clase oficiales del juego -->
+                    <div class="w-full md:w-auto flex justify-center items-center gap-4 md:gap-0 relative">
+                        <img src="assets/images/l2-phoenix-knight.png" alt="Phoenix Knight Oficial Lineage 2" class="h-44 object-contain filter drop-shadow-[0_8px_30px_rgba(212,175,55,0.5)] -rotate-3 hover:scale-105 transition-transform duration-300">
+                        <img src="assets/images/l2-hell-knight.png" alt="Hell Knight Oficial Lineage 2" class="h-52 object-contain filter drop-shadow-[0_8px_30px_rgba(212,175,55,0.6)] rotate-2 hover:scale-105 transition-transform duration-300 -ml-6 scale-x-[-1]">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROADMAP ================= -->
+        <section id="roadmap" class="py-24 px-4 sm:px-6 lg:px-8 bg-abyss/50 border-t border-gold/20">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="font-cinzel text-xs uppercase tracking-widest text-gold font-bold">Calendario de Lanzamiento</span>
+                    <h2 class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient mt-2 uppercase">
+                        Hoja de Ruta del Proyecto
+                    </h2>
+                </div>
+
+                <div class="relative border-l border-gold/30 ml-4 sm:ml-32 space-y-12">
+                    
+                    <div class="relative pl-8 sm:pl-10">
+                        <div class="absolute -left-3.5 top-1.5 w-7 h-7 rounded-full bg-gold flex items-center justify-center text-black font-bold shadow-gold-glow">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-mono text-gold-light uppercase tracking-widest">Fase 1 &bull; En Curso</div>
+                        <h3 class="font-cinzel text-xl font-bold text-white mt-1">Encuestas Comunitarias & Compilación del Core</h3>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2 font-light">
+                            Votación de los parámetros del servidor. Configuración del núcleo Java 27 de alta fidelidad y preparación del datapack sin NPC buffer.
+                        </p>
+                    </div>
+
+                    <div class="relative pl-8 sm:pl-10">
+                        <div class="absolute -left-3.5 top-1.5 w-7 h-7 rounded-full bg-abyss border-2 border-gold flex items-center justify-center text-gold shadow-gold-glow">
+                            <span class="w-2.5 h-2.5 rounded-full bg-gold animate-ping"></span>
+                        </div>
+                        <div class="text-xs font-mono text-freya-ice uppercase tracking-widest">Fase 2 &bull; Próximamente</div>
+                        <h3 class="font-cinzel text-xl font-bold text-white mt-1">Alpha Cerrada & Pruebas de Geodata</h3>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2 font-light">
+                            Verificación de zonas de farmeo clásicas (Cruma, Dragon Valley, Lair of Antharas, Imperial Tomb) y test de balance de habilidades con jugadores invitados.
+                        </p>
+                    </div>
+
+                    <div class="relative pl-8 sm:pl-10">
+                        <div class="absolute -left-3.5 top-1.5 w-7 h-7 rounded-full bg-abyss border-2 border-gray-600 flex items-center justify-center text-gray-500">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-mono text-gray-500 uppercase tracking-widest">Fase 3</div>
+                        <h3 class="font-cinzel text-xl font-bold text-gray-300 mt-1">Open Beta Test (OBT) Pública</h3>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2 font-light">
+                            Apertura pública para todos los clanes y jugadores. Pruebas de asedios, olimpiadas oficiales y afinamiento final de la economía.
+                        </p>
+                    </div>
+
+                    <div class="relative pl-8 sm:pl-10">
+                        <div class="absolute -left-3.5 top-1.5 w-7 h-7 rounded-full bg-abyss border-2 border-gray-600 flex items-center justify-center text-gray-500">
+                            <i data-lucide="flag" class="w-4 h-4"></i>
+                        </div>
+                        <div class="text-xs font-mono text-gray-500 uppercase tracking-widest">Fase 4</div>
+                        <h3 class="font-cinzel text-xl font-bold text-gray-300 mt-1">Gran Apertura Oficial &bull; Live</h3>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2 font-light">
+                            Comienza la leyenda. Lanzamiento oficial del servidor con servidores dedicados blindados contra ataques y el inicio del primer ciclo de héroes.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= LLAMADO FINAL ================= -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+            <div class="max-w-4xl mx-auto p-10 sm:p-14 rounded-2xl border-gold-card relative shadow-gold-lg">
+                <h2 class="font-cinzelDeco text-3xl sm:text-4xl text-gold-gradient font-black uppercase">
+                    Únete a la Resistencia del Rol Clásico
+                </h2>
+                <p class="text-gray-300 font-sans text-sm sm:text-base mt-4 max-w-xl mx-auto font-light leading-relaxed">
+                    Si extrañas la época en que jugar con amigos era la única forma de conquistar el mundo, tu lugar está en <strong class="text-gold font-medium">L2 Memories</strong>.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-4 items-center justify-center">
+                    <a href="#encuestas" class="px-8 py-3.5 bg-gradient-to-r from-gold-light via-gold to-gold-dark text-black font-cinzel font-bold text-xs uppercase tracking-widest rounded shadow-gold-glow hover:scale-105 transition-all">
+                        Dejar mis Votos
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="bg-void border-t border-gold/20 py-12 px-4 sm:px-6 lg:px-8 text-center relative z-10 font-sans text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col items-center gap-6">
+            
+            <div class="flex items-center gap-2">
+                <i data-lucide="shield" class="w-5 h-5 text-gold"></i>
+                <span class="font-cinzel font-bold text-base text-gold-gradient tracking-widest">L2 MEMORIES</span>
+                <span class="text-gray-600 font-mono">&bull; l2memories.fun</span>
+            </div>
+
+            <p class="max-w-2xl font-light leading-relaxed">
+                Lineage II es una marca registrada de NCSOFT Corporation. L2 Memories es un proyecto de emulación privado sin fines de lucro con fines educativos, nostálgicos y de preservación comunitaria. Todos los derechos reservados a sus respectivos autores.
+            </p>
+
+            <div class="text-[11px] font-mono text-gray-600">
+                &copy; 2026 L2 Memories. Forjado por y para la comunidad.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts Interactivos -->
+    <script>
+        // Renderizar iconos de Lucide
+        lucide.createIcons();
+
+        // ------------------ SISTEMA DE ENCUESTAS INTERACTIVO ------------------
+        const pollDefinitions = {
+            'poll-rates': {
+                title: 'Rates de Experiencia y Progresión',
+                options: [
+                    'Low-Rate Purista (x1 a x3)',
+                    'Mid-Low Equilibrado (x5)',
+                    'Rates Dinámicas (x5 hasta 76, luego x3 hacia 85)'
+                ]
+            },
+            'poll-buffs': {
+                title: 'Duración de Buffs de Jugadores (Sin NPC Buffer)',
+                options: [
+                    'Retail Estricto (20 Minutos)',
+                    '40 Minutos de duración',
+                    '1 Hora de duración'
+                ]
+            },
+            'poll-dualbox': {
+                title: 'Política de Dualbox / Cuentas por PC',
+                options: [
+                    '1 Sola Cuenta Activa (0 Dualbox)',
+                    '1 Principal + 1 Soporte (Límite 2 Cuentas)',
+                    '1 Main + 1 Offline Shop'
+                ]
+            },
+            'poll-loot': {
+                title: 'Recogida de Items (Loot)',
+                options: [
+                    'Recogida Manual (Manual Pick-up 100% Retail)',
+                    'Auto-loot sólo de Adena • Ítems al suelo',
+                    'Auto-loot Completo'
+                ]
+            },
+            'poll-shop': {
+                title: 'Política de Donación y Tienda',
+                options: [
+                    '100% Cosmética & Membresía VIP (+XP/SP moderado)',
+                    'Cosmética + Consumibles de Conveniencia'
+                ]
+            }
+        };
+
+        const pollDefaults = {
+            'poll-rates': {
+                counts: [0, 0, 0],
+                userVote: null
+            },
+            'poll-buffs': {
+                counts: [0, 0, 0],
+                userVote: null
+            },
+            'poll-dualbox': {
+                counts: [0, 0, 0],
+                userVote: null
+            },
+            'poll-loot': {
+                counts: [0, 0, 0],
+                userVote: null
+            },
+            'poll-shop': {
+                counts: [0, 0],
+                userVote: null
+            }
+        };
+
+        function getPollData() {
+            const saved = localStorage.getItem('l2memories_polls_launch_clean_v3');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return pollDefaults;
+                }
+            }
+            return pollDefaults;
+        }
+
+        function savePollData(data) {
+            localStorage.setItem('l2memories_polls_launch_clean_v3', JSON.stringify(data));
+        }
+
+        function castVote(pollId, optionIndex) {
+            const data = getPollData();
+            if (!data[pollId]) return;
+
+            const previousVote = data[pollId].userVote;
+
+            if (previousVote === optionIndex) return;
+
+            if (previousVote !== null && data[pollId].counts[previousVote] > 0) {
+                data[pollId].counts[previousVote]--;
+            }
+
+            data[pollId].counts[optionIndex]++;
+            data[pollId].userVote = optionIndex;
+
+            savePollData(data);
+            renderPollsUI();
+        }
+
+        function resetUserVotes() {
+            if (!confirm('¿Deseas reiniciar tus votos para responder nuevamente?')) return;
+            const data = getPollData();
+            for (let pollId in data) {
+                if (data[pollId].userVote !== null) {
+                    const idx = data[pollId].userVote;
+                    if (data[pollId].counts[idx] > 0) {
+                        data[pollId].counts[idx]--;
+                    }
+                    data[pollId].userVote = null;
+                }
+            }
+            savePollData(data);
+            renderPollsUI();
+        }
+
+        function renderPollsUI() {
+            const data = getPollData();
+            let totalVotedPolls = 0;
+            const totalPolls = Object.keys(data).length;
+
+            for (let pollId in data) {
+                const pollInfo = data[pollId];
+                const card = document.querySelector(`[data-poll-id="${pollId}"]`);
+                if (!card) continue;
+
+                const options = card.querySelectorAll('.option-btn');
+                const badge = card.querySelector('.poll-badge');
+                const totalVotes = pollInfo.counts.reduce((a, b) => a + b, 0);
+
+                if (pollInfo.userVote !== null) {
+                    totalVotedPolls++;
+                    badge.textContent = 'Votado ✓';
+                    badge.className = 'poll-badge text-xs px-2.5 py-1 rounded bg-gold/20 text-gold font-mono font-bold border border-gold/40';
+                } else {
+                    badge.textContent = 'Sin votar';
+                    badge.className = 'poll-badge text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-400 font-mono';
+                }
+
+                options.forEach((btn, idx) => {
+                    const count = pollInfo.counts[idx] || 0;
+                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+
+                    const bar = btn.querySelector('.progress-bar');
+                    bar.style.width = `${pct}%`;
+
+                    const label = btn.querySelector('.percentage-label');
+                    label.textContent = totalVotes > 0 ? `${pct}% (${count})` : '0% (0)';
+
+                    const checkCircle = btn.querySelector('.check-circle');
+                    if (pollInfo.userVote === idx) {
+                        btn.classList.add('border-gold', 'bg-gold/10', 'ring-1', 'ring-gold');
+                        btn.classList.remove('border-gray-800');
+                        checkCircle.classList.add('bg-gold', 'text-black', 'border-gold');
+                        checkCircle.classList.remove('text-transparent', 'border-gray-600');
+                    } else {
+                        btn.classList.remove('border-gold', 'bg-gold/10', 'ring-1', 'ring-gold');
+                        btn.classList.add('border-gray-800');
+                        checkCircle.classList.remove('bg-gold', 'text-black', 'border-gold');
+                        checkCircle.classList.add('text-transparent', 'border-gray-600');
+                    }
+                });
+            }
+
+            const display = document.getElementById('votedCountDisplay');
+            if (display) display.textContent = `${totalVotedPolls} / ${totalPolls}`;
+
+            const msg = document.getElementById('pollStatusMessage');
+            if (msg) {
+                if (totalVotedPolls === totalPolls) {
+                    msg.innerHTML = '<span class="text-gold font-medium">¡Has completado todas las encuestas! Gracias por forjar el alma clásica de L2 Memories.</span>';
+                } else {
+                    msg.textContent = `Has completado ${totalVotedPolls} de ${totalPolls} preguntas. Cada voto cuenta.`;
+                }
+            }
+
+            // Actualizar vista previa del formulario de envío
+            const summaryContainer = document.getElementById('summaryVotesList');
+            if (summaryContainer) {
+                summaryContainer.innerHTML = '';
+                for (let pollId in pollDefinitions) {
+                    const def = pollDefinitions[pollId];
+                    const voteIdx = data[pollId] ? data[pollId].userVote : null;
+                    const row = document.createElement('div');
+                    row.className = 'flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-gray-800/60 gap-1';
+                    
+                    if (voteIdx !== null && def.options[voteIdx]) {
+                        row.innerHTML = `<span class="text-gray-400 font-mono text-[11px]">${def.title}:</span> <span class="text-gold font-medium text-xs">${def.options[voteIdx]}</span>`;
+                    } else {
+                        row.innerHTML = `<span class="text-gray-500 font-mono text-[11px]">${def.title}:</span> <span class="text-gray-600 italic text-xs font-mono">(Pendiente de voto)</span>`;
+                    }
+                    summaryContainer.appendChild(row);
+                }
+            }
+        }
+
+        // ------------------ ENVÍO DE ENCUESTA A luiszartecas@gmail.com ------------------
+        async function submitSurveyToEmail(event) {
+            event.preventDefault();
+            const data = getPollData();
+            const nick = document.getElementById('playerNick').value.trim();
+            const contact = document.getElementById('playerContact').value.trim();
+            const comment = document.getElementById('playerComment').value.trim();
+            const alertBox = document.getElementById('submissionAlert');
+            const submitBtn = document.getElementById('btnSubmitSurvey');
+            const btnText = document.getElementById('btnSubmitText');
+
+            // Recopilar respuestas
+            const answers = {};
+            let hasAnyVote = false;
+            for (let id in pollDefinitions) {
+                const def = pollDefinitions[id];
+                const voteIdx = data[id] ? data[id].userVote : null;
+                if (voteIdx !== null && def.options[voteIdx]) {
+                    answers[def.title] = def.options[voteIdx];
+                    hasAnyVote = true;
+                } else {
+                    answers[def.title] = 'No votado';
+                }
+            }
+
+            if (!hasAnyVote) {
+                alertBox.className = 'p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs font-sans block';
+                alertBox.innerHTML = '⚠️ Por favor, selecciona al menos una opción en las encuestas antes de enviar.';
+                return;
+            }
+
+            // Estado de carga en botón
+            submitBtn.disabled = true;
+            btnText.textContent = 'Enviando a luiszartecas@gmail.com...';
+            alertBox.className = 'p-4 rounded-lg border border-blue-500/30 bg-blue-500/10 text-freya-ice text-xs font-sans block';
+            alertBox.innerHTML = '<span class="inline-block animate-spin mr-2">⚙️</span> Transmitiendo respuestas de forma segura a la administración...';
+
+            const payload = {
+                _subject: `[L2 Memories] Encuesta de Jugador: ${nick}`,
+                _replyto: (contact && contact.includes('@')) ? contact : undefined,
+                _captcha: 'false',
+                _template: 'table',
+                Jugador_Nickname: nick,
+                Contacto_Jugador: contact || 'No especificado',
+                ...answers,
+                Comentario_Sugerencia: comment || 'Sin comentarios adicionales',
+                Fecha_Envio: new Date().toLocaleString()
+            };
+
+            try {
+                const res = await fetch('https://formsubmit.co/ajax/luiszartecas@gmail.com', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alertBox.className = 'p-4 rounded-lg border border-gold/40 bg-gold/10 text-gold-light text-xs font-sans block';
+                    alertBox.innerHTML = `✓ <strong>¡Encuesta enviada con éxito!</strong> Tus votos fueron transmitidos directamente a <strong>luiszartecas@gmail.com</strong>. Gracias por forjar el renacer de L2 Memories.`;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnText.textContent = 'Encuesta Enviada ✓';
+                    lucide.createIcons();
+                } else {
+                    throw new Error('El servidor de correo no respondió con éxito');
+                }
+            } catch (err) {
+                alertBox.className = 'p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-red-300 text-xs font-sans block';
+                alertBox.innerHTML = `No se pudo enviar automáticamente (${err.message}). Puedes enviar tus respuestas directamente por correo a <a href="mailto:luiszartecas@gmail.com" class="underline text-gold font-mono">luiszartecas@gmail.com</a>.`;
+                submitBtn.disabled = false;
+                btnText.textContent = 'Reintentar Envío';
+            }
+        }
+
+        // ------------------ CONTADOR REGRESIVO DINÁMICO ------------------
+        const targetDate = new Date(Date.now() + (14 * 24 * 60 * 60 * 1000) + (18 * 60 * 60 * 1000));
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate.getTime() - now;
+
+            if (distance < 0) return;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('countdownDays').textContent = String(days).padStart(2, '0');
+            document.getElementById('countdownHours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('countdownMinutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('countdownSeconds').textContent = String(seconds).padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // ------------------ CANVAS DE PARTÍCULAS MÁGICAS ------------------
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        const particleCount = 45;
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.6 + 0.6,
+                speedY: -(Math.random() * 0.4 + 0.15),
+                speedX: (Math.random() - 0.5) * 0.2,
+                opacity: Math.random() * 0.5 + 0.2,
+                color: Math.random() > 0.4 ? 'rgba(212, 175, 55,' : 'rgba(142, 233, 255,'
+            });
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+
+                if (p.y < -10) {
+                    p.y = height + 10;
+                    p.x = Math.random() * width;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `${p.color} ${p.opacity})`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        renderPollsUI();
+    </script>
+</body>
+</html>
